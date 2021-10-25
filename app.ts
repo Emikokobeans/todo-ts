@@ -1,3 +1,11 @@
+class TodoService {
+  constructor(private todos: Todo[]) {}
+
+  getAll() {
+    return this.todos;
+  }
+}
+
 var $ = <jQuery>function (selector: string) {
   // Find DOM element
 };
