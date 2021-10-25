@@ -1,21 +1,3 @@
-class TodoService {
-  static lastId: number = 0;
-
-  constructor(private todos: Todo[]) {}
-
-  add(todo: Todo) {
-    var newId = TodoService.getNextId();
-  }
-
-  getAll() {
-    return this.todos;
-  }
-
-  static getNextId() {
-    return (TodoService.lastId += 1);
-  }
-}
-
 interface Todo {
   name: string;
   state: TodoState;
@@ -28,35 +10,59 @@ enum TodoState {
   Deleted
 }
 
-class SmartTodo {
-  _state: TodoState;
+class TodoService {
+  private static _lastId: number = 0;
 
-  name: string;
-
-  get state() {
-    return this._state;
+  private get nextId() {
+    return TodoService.getNextId();
   }
 
-  set state(newState) {
-    if (newState == TodoState.Complete) {
-      var canBeCompleted =
-        this.state == TodoState.Active || this.state == TodoState.Deleted;
-
-      if (!canBeCompleted) {
-        throw 'Todo must be Active or Deleted in order to be marked Completed';
-      }
-    }
-
-    this._state = newState;
+  private set nextId(nextId) {
+    TodoService._lastId = nextId - 1;
   }
 
-  constructor(name: string) {
-    this.name = name;
+  constructor(private todos: Todo[]) {}
+
+  add(todo: Todo) {
+    var newId = this.nextId;
+  }
+
+  private getAll() {
+    return this.todos;
+  }
+
+  static getNextId() {
+    return (TodoService._lastId += 1);
   }
 }
 
-var todo = new SmartTodo('Pick up drycleaning');
+abstract class TodoStateChanger {
+  constructor(protected newState: TodoState) {}
 
-todo.state = TodoState.Complete;
+  abstract canChangeState(todo: Todo): boolean;
 
-todo.state;
+  changeState(todo: Todo): Todo {
+    if (this.canChangeState(todo)) {
+      todo.state = this.newState;
+    }
+
+    return todo;
+  }
+}
+
+class CompleteTodoStateChanger extends TodoStateChanger {
+  constructor() {
+    super(TodoState.Complete);
+  }
+
+  canChangeState(todo: Todo): boolean {
+    return (
+      !!todo &&
+      (todo.state == TodoState.Active || todo.state == TodoState.Deleted)
+    );
+  }
+}
+
+class SmartTodo {
+  constructor(public name: string) {}
+}
