@@ -1,49 +1,34 @@
 class TodoService {
+  static lastId: number = 0;
+
   constructor(private todos: Todo[]) {}
+
+  add(todo: Todo) {
+    var newId = TodoService.getNextId();
+  }
 
   getAll() {
     return this.todos;
   }
+
+  static getNextId() {
+    return (TodoService.lastId += 1);
+  }
 }
-
-var $ = <jQuery>function (selector: string) {
-  // Find DOM element
-};
-
-$.version = 1.18;
 
 interface Todo {
   name: string;
-  completed?: boolean;
+  state: TodoState;
 }
 
-interface jQuery {
-  (selector: string | any): jQueryElement;
-  fn: any;
-  version: number;
+enum TodoState {
+  New = 1,
+  Active,
+  Complete,
+  Deleted
 }
 
-interface jQueryElement {
-  data(name: string): any;
-  data(name: string, data: any): jQueryElement;
-}
-
-interface jQueryElement {
-  todo(): Todo;
-  todo(todo: Todo): jQueryElement;
-}
-
-$.fn.todo = function (todo?: Todo): Todo {
-  if (todo) {
-    $(this).data('todo', todo);
-  } else {
-    return $(this).data('todo');
-  }
+var todo = {
+  name: 'Pick up drycleaning',
+  state: TodoState.Complete
 };
-
-var todo = { name: 'Pick up drycleaning' };
-var container = $('#container');
-container.data('todo', todo);
-var savedTodo = container.data('todo');
-
-container.todo(todo);
