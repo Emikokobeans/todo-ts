@@ -11,7 +11,6 @@
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
-
   <body>
     <div class="container">
       <div class="header clearfix">
@@ -67,17 +66,18 @@
 
     <script
       type="text/javascript"
-      src="//code.jquery.com/jquery-1.12.1.min.js"
+      src="//cdnjs.cloudflare.com/ajax/libs/systemjs/0.19.22/system.js"
     ></script>
-    <script type="text/javascript" src="TodoListComponent.js"></script>
-    <script type="text/javascript" src="TodoService.js"></script>
-    <script type="text/javascript" src="TodoApp.js"></script>
     <script type="text/javascript">
-      new TodoApp(document, [
-        'Feed cats',
-        'Paint a masterpiece',
-        'Save Gotham'
-      ]);
+      System.defaultJSExtensions = true;
+
+      System.import('TodoApp').then(function (module) {
+        new module.TodoApp(document, [
+          'Feed cats',
+          'Play with cats',
+          'Get more cats'
+        ]);
+      });
     </script>
   </body>
 </html>
