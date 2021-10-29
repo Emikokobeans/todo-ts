@@ -1,15 +1,7 @@
-interface Todo {
-  id: number;
-  name: string;
-  state: TodoState;
-}
+import { Todo, TodoState } from './Model';
+import { ValidatableTodo } from './Validators';
 
-enum TodoState {
-  Active = 1,
-  Complete = 2
-}
-
-interface ITodoService {
+export interface ITodoService {
   add(todo: Todo): Todo;
   add(todo: string): Todo;
   clearCompleted(): void;
@@ -18,18 +10,18 @@ interface ITodoService {
   toggle(todoId: number): void;
 }
 
-class TodoService implements ITodoService {
-  private static _lastId = 0;
+let _lastId = 0;
 
-  private static generateTodoId(): number {
-    return (TodoService._lastId += 1);
-  }
+function generateTodoId(): number {
+  return (_lastId += 1);
+}
 
-  private static clone<T>(src: T): T {
-    var clone = JSON.stringify(src);
-    return JSON.parse(clone);
-  }
+function clone<T>(src: T): T {
+  var clone = JSON.stringify(src);
+  return JSON.parse(clone);
+}
 
+export default class TodoService implements ITodoService {
   private todos: Todo[] = [];
 
   constructor(todos: string[]) {
@@ -41,12 +33,11 @@ class TodoService implements ITodoService {
   // Accepts a todo name or todo object
   add(todo: Todo): Todo;
   add(todo: string): Todo;
+  @log
   add(input): Todo {
-    var todo: Todo = {
-      id: TodoService.generateTodoId(),
-      name: null,
-      state: TodoState.Active
-    };
+    var todo = new ValidatableTodo();
+    todo.id = generateTodoId();
+    todo.state = TodoState.Active;
 
     if (typeof input === 'string') {
       todo.name = input;
@@ -54,6 +45,13 @@ class TodoService implements ITodoService {
       todo.name = input.name;
     } else {
       throw 'Invalid Todo name!';
+    }
+
+    let errors = todo.validate();
+
+    if (errors.length) {
+      let combinedErrors = errors.map((x) => `${x.property}: ${x.message}`);
+      throw `Invalid Todo: ${combinedErrors}`;
     }
 
     this.todos.push(todo);
@@ -66,12 +64,12 @@ class TodoService implements ITodoService {
   }
 
   getAll(): Todo[] {
-    return TodoService.clone(this.todos);
+    return clone(this.todos);
   }
 
   getById(todoId: number): Todo {
     var todo = this._find(todoId);
-    return TodoService.clone(todo);
+    return clone(todo);
   }
 
   toggle(todoId: number): void {
@@ -99,4 +97,24 @@ class TodoService implements ITodoService {
 
     return null;
   }
+}
+
+function log(
+  target: Object,
+  methodName: string,
+  descriptor: TypedPropertyDescriptor<Function>
+) {
+  let originalMethod = descriptor.value;
+
+  descriptor.value = function (...args) {
+    console.log(`${methodName}(${JSON.stringify(args)})`);
+
+    let returnValue = originalMethod.apply(this, args);
+
+    console.log(
+      `${methodName}(${JSON.stringify(args)}) => ${JSON.stringify(returnValue)}`
+    );
+
+    return returnValue;
+  };
 }
