@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "tsd": "^0.18.0"
+  },
+  "devDependencies": {
+    "@types/jquery": "^3.5.8"
   }
 }
